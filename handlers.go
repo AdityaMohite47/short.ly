@@ -5,13 +5,11 @@ import (
 	// "errors"
 	"log"
 	"net/http"
-	// "net/url"
 )
 
-// Handler holds everything the handlers need.
 type Handler struct {
 	DB      *DBconn
-	BaseURL string
+	// BaseURL string
 }
 
 type ShortenRequest struct {
@@ -29,14 +27,14 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
-	if err := h.DB.InsertLink(r.Context(), req.URL); err != nil {
+	if short_url, err := h.DB.getShortURL(r.Context(), req.URL); err != nil {
 		log.Println("create link failed:", err)
 		http.Error(w, "something went wrong", http.StatusInternalServerError)
 		return
+	}else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(ShortenResponse{ShortURL:short_url})
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(ShortenResponse{ShortURL: req.URL})
 }

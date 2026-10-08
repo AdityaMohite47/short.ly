@@ -8,7 +8,7 @@ import (
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // Encode turns a number into a short Base62 string
-func Encode(n uint64) string {
+func Encode(n int64) string {
 	if n == 0 {
 		return "0"
 	}
@@ -27,14 +27,14 @@ func Encode(n uint64) string {
 }
 
 // Decode turns a Base62 string back into the original number
-func Decode(s string) (uint64, error) {
-	var n uint64
+func Decode(s string) (int64, error) {
+	var n int64
 	for _, c := range []byte(s) {
 		index := strings.IndexByte(alphabet, c)
 		if index == -1 {
 			return 0, errors.New("invalid character in code")
 		}
-		n = n*62 + uint64(index)
+		n = n*62 + int64(index)
 	}
 	return n, nil
 }
