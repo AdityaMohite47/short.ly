@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"short.ly/internal/api"
-	"short.ly/internal/storage"
+	"short.ly/internal/db"
 )
 
 func main() {

@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"short.ly/internal/storage"
+	"short.ly/internal/db"
 )
 
 type Handler struct {
