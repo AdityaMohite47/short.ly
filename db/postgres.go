@@ -1,4 +1,4 @@
-package storage
+package db
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"short.ly/shortcode"
 )
 
-type DB struct {
-	Pool *pgxpool.Pool
-}
+// type DBpool struct {
+// 	Pool *pgxpool.Pool
+// }
 
 // Connect opens a connection pool to url and checks the database is reachable
-func Connect(ctx context.Context, url string) (*DB, error) {
+func Connectpsql(ctx context.Context, url string) (*pgxpool.Pool, error) {
 	// defining a connection pool
 	pool, err := pgxpool.New(ctx, url)
 	if err != nil {
@@ -31,12 +31,12 @@ func Connect(ctx context.Context, url string) (*DB, error) {
 	}
 
 	fmt.Println("Connected to PostgreSQL")
-	return &DB{Pool: pool}, nil
+	return  pool, nil
 }
 
-func (d *DB) Close() {
-	d.Pool.Close()
-}
+// func () Close() {
+// 	d.Pool.Close()
+// }
 
 var ErrNotFound = errors.New("link not found")
 
@@ -44,14 +44,14 @@ var ErrNotFound = errors.New("link not found")
 const maxCodeAttempts = 5
 
 // CreateLink saves a long URL under a freshly generated random code and returns the code
-func (d *DB) CreateLink(ctx context.Context, longURL string) (string, error) {
+func CreateLink(pool *pgxpool.Pool , ctx context.Context, longURL string) (string, error) {
 	for range maxCodeAttempts {
 		code, err := shortcode.GenerateCode(shortcode.CodeLength)
 		if err != nil {
 			return "", err
 		}
 
-		_, err = d.Pool.Exec(ctx,
+		_, err = pool.Exec(ctx,
 			"INSERT INTO shortlinks (code, long_url) VALUES ($1, $2)",
 			code, longURL,
 		)
@@ -70,9 +70,9 @@ func (d *DB) CreateLink(ctx context.Context, longURL string) (string, error) {
 }
 
 // GetLongURL returns the long URL stored under code, or ErrNotFound
-func (d *DB) GetLongURL(ctx context.Context, code string) (string, error) {
+func GetLongURL(pool *pgxpool.Pool, ctx context.Context, code string) (string, error) {
 	var long_url string
-	err := d.Pool.QueryRow(ctx, `SELECT long_url FROM shortlinks WHERE code = $1`, code).Scan(&long_url)
+	err := pool.QueryRow(ctx, `SELECT long_url FROM shortlinks WHERE code = $1`, code).Scan(&long_url)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", ErrNotFound
 	}
