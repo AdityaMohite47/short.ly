@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,9 +15,6 @@ import (
 	"short.ly/shortcode"
 )
 
-// type DBpool struct {
-// 	Pool *pgxpool.Pool
-// }
 
 // Connect opens a connection pool to url and checks the database is reachable
 func Connectpsql(ctx context.Context, url string) (*pgxpool.Pool, error) {
@@ -34,18 +34,15 @@ func Connectpsql(ctx context.Context, url string) (*pgxpool.Pool, error) {
 	return  pool, nil
 }
 
-// func () Close() {
-// 	d.Pool.Close()
-// }
 
 var ErrNotFound = errors.New("link not found")
 
-// maxCodeAttempts bounds retries when a random code collides with an existing one.
-const maxCodeAttempts = 5
-
 // CreateLink saves a long URL under a freshly generated random code and returns the code
 func CreateLink(pool *pgxpool.Pool , ctx context.Context, longURL string) (string, error) {
-	for range maxCodeAttempts {
+	if err := godotenv.Load(); err != nil {
+		log.Println("Failed Loading .env variables", err)
+	}
+	for range os.Getenv("CODE_MAX_RETRIES") {
 		code, err := shortcode.GenerateCode(shortcode.CodeLength)
 		if err != nil {
 			return "", err
