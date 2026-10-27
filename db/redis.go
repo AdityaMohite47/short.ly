@@ -16,7 +16,7 @@ func CacheTTL() (time.Duration, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Failed Loading .env variables", err)
 	}
-	s := os.Getenv("CACHE_URL_EXPIRY_HOURS")
+	s := os.Getenv("CACHE_TTL")
 	if s == "" {
 		return 24 * time.Hour, nil
 	}
